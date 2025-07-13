@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 import os
-from agents import AsyncOpenAI, OpenAIChatCompletionsModel, RunConfig, Agent, Runner
+from agents import AsyncOpenAI, function_tool, OpenAIChatCompletionsModel, RunConfig, Agent, Runner
 
 # Connectivity Starts
 load_dotenv()
@@ -28,14 +28,22 @@ config = RunConfig(
 )
 # Connectivity ends here
 
+# function calling
+@function_tool
+def get_weather():
+    # API/ DB call
+    return "Today Current weather is 24 degrees"
+
 # Creating an Agent
-writer = Agent(
-    name = 'Writer Agent',
+weather_agent = Agent(
+    name = 'Weather Agent',
     instructions=""" 
-        You are a writer agent. Write whatever user wants to make your write.
-    """
+        You are a weather agent. Answer the user query to let user know the weather.
+        Beyond weather donot answer any query.
+    """,
+    tools=[get_weather]
 )
 
 # Execute your agent
-result = Runner.run_sync(writer, "Write an essay on Noise Pollution. Write one paragraph only", run_config=config)
+result = Runner.run_sync(weather_agent, "What is the weather today?", run_config=config)
 print(result.final_output)
